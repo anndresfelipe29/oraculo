@@ -10,19 +10,24 @@ exports.callApi = async (url, methodRequest) => {
         identificacion: '1001',          
       }*/
     }
-   request(requestOptions, (err, response, body) => {
-      if (err === null) {
-          console.log(response.statusCode)
-          if(response.statusCode == 200) {
-            resolve(response.body)
-          }
-          console.log(response.body)
-          reject("Invalid status");
-          //console.log(body)
-        } else {
-          console.log(err);
-          reject(err);
-        }
-    })
+    try {
+      request(requestOptions, (err, response, body) => {
+          if (err === null) {
+              console.log(response.statusCode)
+              if(response.statusCode == 200) {
+                resolve(response.body)
+              }
+              console.log(response.body)
+              reject("Invalid status");
+              //console.log(body)
+            } else {
+              console.log(err);
+              reject(err);
+            }
+        })
+    } catch (error) {
+      console.error("se murio:", error )
+    }
+
     })
 };

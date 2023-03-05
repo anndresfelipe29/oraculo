@@ -5,14 +5,15 @@ const oraculo = require('./oraculo')
 exports.responder = async (values) => {
     //console.log(values)
     console.log("entra a responder")
+    let response
     try {
-        let response = await comunicadorAppExterna.callApi(values.urlToQuery, values.attributeToFetch)
-        
-        oraculo.updateRequest(values.id, JSON.parse(response))
-        // guardar info en blockchain
-        console.log("voy a responder")  
+        let info = await comunicadorAppExterna.callApi(values.urlToQuery, values.attributeToFetch)
+        response = JSON.parse(info)
+        console.table(info)
     } catch (error) {
         console.error("Se rompio en retorno.responder")
+        response = null
     }
-
+    
+    return response
 }
