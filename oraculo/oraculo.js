@@ -10,7 +10,7 @@ const direcciones = require('./extras/direcciones.json')
 // const web3 = new Web3(new Web3.providers.WebsocketProvider(process.env.WEB3_PROVIDER_ADDRESS));
 
 // const web3 = new Web3(new Web3.providers.WebsocketProvider("http://localhost:7545"));
-const web3 = new Web3(new Web3.providers.WebsocketProvider("http://172.18.0.1:7545"));
+const web3 = new Web3(new Web3.providers.WebsocketProvider(process.env.WEB3_PROVIDER_ADDRESS));
 
 
 const abi = oracleAbi.abi;  //JSON.parse(process.env.ABI);
