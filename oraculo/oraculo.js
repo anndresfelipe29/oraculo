@@ -167,7 +167,7 @@ exports.updateRequest = async (
 };
 
 
-const account = () => {
+/*const account = () => {
   return new Promise((resolve, reject) => {
     web3.eth.getAccounts((err, accounts) => {
       if (err === null) {
@@ -180,6 +180,11 @@ const account = () => {
       }
     });
   });
+};*/
+
+const account = () => {
+  console.log(process.env.ACCOUNT)
+  return process.env.ACCOUNT;
 };
 
 const getContractAddress = () => {
