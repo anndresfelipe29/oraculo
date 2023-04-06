@@ -150,10 +150,12 @@ exports.updateRequest = async (
   console.table(response)
 
   try {
-    await contract.methods.updateRequest(id, response).send({
+    let txObject = {
       from: accountValue,
       gas: 6000000
-    }, (err, res) => {
+    }
+    const signedTx = await web3.eth.accounts.signTransaction(txObject, process.env.PRIVATE_KEY);
+    await contract.methods.updateRequest(id, response).send(signedTx.rawTransaction, (err, res) => {
       if (err === null) {
         console.log('Transacción ok')
       } else {
