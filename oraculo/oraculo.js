@@ -189,11 +189,9 @@ exports.updateRequest = async (
 
     web3.eth.sendSignedTransaction(signedTx.rawTransaction, function (error, res) {
       if (!error) {
-        console.log('Transaction hash:', res);
-        resolve(res);
+        console.log('Transaction hash:', res);      
       } else {
-        console.error('Error:', error);
-        reject(err);
+        console.error('Error:', error);        
       }
     })
 
