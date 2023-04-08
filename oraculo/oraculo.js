@@ -5,11 +5,16 @@ const oracleAbi = require('./abi/Oracle.json')
 const retorno = require('./retorno')
 
 const direcciones = require('./extras/direcciones.json')
+const HDWalletProvider = require("@truffle/hdwallet-provider");
 
 // const web3 = new Web3(new Web3.providers.HttpProvider(process.env.WEB3_PROVIDER_ADDRESS));
 // const web3 = new Web3(new Web3.providers.WebsocketProvider(process.env.WEB3_PROVIDER_ADDRESS));
 
 // const web3 = new Web3(new Web3.providers.WebsocketProvider("http://localhost:7545"));
+const provider = new HDWalletProvider({
+  privateKeys: [process.env.PRIVATE_KEY],
+  providerOrUrl: process.env.WEB3_PROVIDER_ADDRESS
+});
 const web3 = new Web3(new Web3.providers.WebsocketProvider(process.env.WEB3_PROVIDER_ADDRESS));
 
 
@@ -19,6 +24,10 @@ const abi = oracleAbi.abi;  //JSON.parse(process.env.ABI);
 // "0x718c7e587192465270CB57BC0a7fC7f4dD6374E8"
 // const version = web3.version.api;
 var contract
+
+const account = () => {
+  return process.env.ACCOUNT;
+};
 
 exports.init = async () => {
   contract = new web3.eth.Contract(
@@ -87,20 +96,37 @@ exports.createRequest = (
   interested,
   cause
 ) => {
-  return new Promise((resolve, reject) => {
-    account().then(account => {
+  return new Promise(async (resolve, reject) => {
+    try {
+
       console.log("new request:" + urlToQuery + " - " + attributeToFetch)
-      contract.methods.createRequest(urlToQuery, attributeToFetch, interested, cause).send({
-        from: account,
-        gas: 6000000
-      }, (err, res) => {
-        if (err === null) {
+      let nonce = await web3.eth.getTransactionCount(account());
+      console.log('Nonce:', nonce);
+      let contractMethod = contract.methods.createRequest(urlToQuery, attributeToFetch, interested, cause);
+      let functionAbi = contractMethod.encodeABI();
+
+      let txObject = {
+        nonce: web3.utils.toHex(nonce),
+        gasLimit: web3.utils.toHex(6000000),
+        to: getContractAddress(),
+        data: functionAbi
+      };
+
+      let signedTx = await web3.eth.accounts.signTransaction(txObject, process.env.PRIVATE_KEY);
+
+      web3.eth.sendSignedTransaction(signedTx.rawTransaction, function (error, res) {
+        if (!error) {
+          console.log('Transaction hash:', res);
           resolve(res);
         } else {
+          console.error('Error:', error);
           reject(err);
         }
-      });
-    }).catch(error => reject(error));
+      })
+
+    } catch (error) {
+      reject(error);
+    }
   });
 };
 
@@ -136,36 +162,46 @@ exports.updateRequest = async (
   id,
   valueRetrieved
 ) => {
-  console.log('Update request: ' + valueRetrieved)
-  let accountValue = await account()
-  console.warn('Cuenta: ', accountValue)
-
-  let response = [
-    valueRetrieved.identificacion,
-    valueRetrieved.nombre,
-    valueRetrieved.apellido,
-    valueRetrieved.especialidad,
-    valueRetrieved.activo.toString()
-  ]
-  console.table(response)
-
   try {
+    console.log('Update request: ' + valueRetrieved)
+    let nonce = await web3.eth.getTransactionCount(account());
+    console.log('Nonce:', nonce);
+
+    let response = [
+      valueRetrieved.identificacion,
+      valueRetrieved.nombre,
+      valueRetrieved.apellido,
+      valueRetrieved.especialidad,
+      valueRetrieved.activo.toString()
+    ]
+    console.table(response)
+
+    let contractMethod = contract.methods.updateRequest(id, response)
+    let functionAbi = contractMethod.encodeABI();
     let txObject = {
-      from: accountValue,
-      gas: 6000000
-    }
-    const signedTx = await web3.eth.accounts.signTransaction(txObject, process.env.PRIVATE_KEY);
-    await contract.methods.updateRequest(id, response).send(signedTx.rawTransaction, (err, res) => {
-      if (err === null) {
-        console.log('Transacción ok')
+      nonce: web3.utils.toHex(nonce),
+      gasLimit: web3.utils.toHex(6000000),
+      to: getContractAddress(),
+      data: functionAbi
+    };
+
+    let signedTx = await web3.eth.accounts.signTransaction(txObject, process.env.PRIVATE_KEY);
+
+    web3.eth.sendSignedTransaction(signedTx.rawTransaction, function (error, res) {
+      if (!error) {
+        console.log('Transaction hash:', res);
+        resolve(res);
       } else {
-        console.error('error:', err)
+        console.error('Error:', error);
+        reject(err);
       }
-    });
+    })
+
   } catch (error) {
-    console.log("Se presento el siguiente error:")
-    console.error(error)
+    reject(error);
   }
+
+
 };
 
 
@@ -184,10 +220,7 @@ exports.updateRequest = async (
   });
 };*/
 
-const account = () => {
-  console.log(process.env.ACCOUNT)
-  return process.env.ACCOUNT;
-};
+
 
 const getContractAddress = () => {
   // console.log(direcciones)
@@ -199,3 +232,40 @@ const getContractAddress = () => {
   // console.log(result)
   return result.direccion
 }
+
+/* 
+Otra forma de enviar transaciones (Sin firmar)
+exports.updateRequest = async (
+  id,
+  valueRetrieved
+) => {
+  console.log('Update request: ' + valueRetrieved)
+  let accountValue = await account()
+  console.warn('Cuenta: ', accountValue)
+
+  let response = [
+    valueRetrieved.identificacion,
+    valueRetrieved.nombre,
+    valueRetrieved.apellido,
+    valueRetrieved.especialidad,
+    valueRetrieved.activo.toString()
+  ]
+  console.table(response)
+
+  try {
+    await contract.methods.updateRequest(id, response).send({
+      from: accountValue,
+      gas: 6000000
+    }, (err, res) => {
+      if (err === null) {
+        console.log('Transacción ok')
+      } else {
+        console.error('error:', err)
+      }
+    });
+  } catch (error) {
+    console.log("Se presento el siguiente error:")
+    console.error(error)
+  }
+};
+*/ 
