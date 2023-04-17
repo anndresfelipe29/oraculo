@@ -32,10 +32,7 @@ const account = () => {
 exports.init = async () => {
   contract = new web3.eth.Contract(
     abi,
-    getContractAddress(),
-    {
-      gasPrice: '20000000000'
-    });
+    getContractAddress());
 
 
   console.log("Se creo conexión con contrato")
@@ -98,7 +95,10 @@ exports.createRequest = (
 ) => {
   return new Promise(async (resolve, reject) => {
     try {
-
+      if(urlToQuery == undefined || attributeToFetch == undefined || interested == undefined || cause == undefined) {
+        console.error("Solicitud invalida")
+        reject(err);
+      }
       console.log("new request:" + urlToQuery + " - " + attributeToFetch)
       let nonce = await web3.eth.getTransactionCount(account());
       console.log('Nonce:', nonce);
