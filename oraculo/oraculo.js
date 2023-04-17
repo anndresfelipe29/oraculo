@@ -97,7 +97,7 @@ exports.createRequest = (
     try {
       if(urlToQuery == undefined || attributeToFetch == undefined || interested == undefined || cause == undefined) {
         console.error("Solicitud invalida")
-        reject(err);
+        reject("Error, solicitud invalida");
       }
       console.log("new request:" + urlToQuery + " - " + attributeToFetch)
       let nonce = await web3.eth.getTransactionCount(account());
