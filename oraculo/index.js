@@ -15,6 +15,7 @@ const oraculo = require('./oraculo')
 const ejemplo = require('./eventos')
 
 app.get('/', (req, res) => {
+  try {
     let url = req.query.url;
     let method = req.query.method;
     let interested = req.query.interested;
@@ -22,6 +23,10 @@ app.get('/', (req, res) => {
     oraculo.createRequest(url, method, interested, cause)
     res.send('Hello World!')
     res.status(200)
+  } catch (error) {
+    console.error("Se produjo un error:", error)
+    res.status('500')
+  }
 })
 
 app.listen(port, async () => {
