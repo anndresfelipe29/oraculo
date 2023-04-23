@@ -21,7 +21,7 @@ const account = () => {
 
 exports.init = async () => {
   contracto = new web3.eth.Contract(abi, obtenerDireccionDeContrato())
-  console.log("Se creo conexión con contrato")
+  console.log(dateNow(), "Se creo conexión con contrato")
   newRequest(contracto)
   updatedRequest(contracto)
   return contracto
@@ -35,7 +35,7 @@ const newRequest = (contracto) => {
   contracto.events.NewRequest(opcionesDeNotificacion)
     .on('data', async evento => {
       try {
-        console.log('Notificacion new request: ', evento.returnValues)
+        console.log(dateNow(), 'Notificacion new request: ', evento.returnValues)
 
         let respuesta = await retorno.responder(evento.returnValues)
         console.table(respuesta)
@@ -44,12 +44,12 @@ const newRequest = (contracto) => {
           await this.updateRequest(evento.returnValues.id, respuesta)
         }
       } catch (error) {
-        console.error("Fallo en el sistema: ", error)
+        console.error(dateNow(),"Fallo en el sistema: ", error)
       }
     })
     .on('error', error => {
-      console.log("Ocurrio una notificación de error, changed")
-      console.log(error)
+      console.log(dateNow(), "Ocurrio una notificación de error, changed")
+      console.log(dateNow(), error)
     })
 
 };
@@ -61,11 +61,11 @@ const updatedRequest = (contracto) => {
 
   contracto.events.UpdatedRequest(opcionesDeNotificacion)
     .on('data', evento => {
-      console.log('Notificación updated request: ', evento.returnValues)
+      console.log(dateNow(), 'Notificación updated request: ', evento.returnValues)
     })
     .on('error', error => {
-      console.error("Ocurrio una notificación de error, changed")
-      console.error(error)
+      console.error(dateNow(), "Ocurrio una notificación de error, changed")
+      console.error(dateNow(), error)
     })
 };
 
@@ -79,11 +79,11 @@ exports.createRequest = (
     try {
 
       if (urlAConsultar == undefined || metodoDeConsulta == undefined || interesado == undefined || causa == undefined) {
-        console.error("Solicitud invalida")
-        reject("Error, solicitud invalida")
+        console.error(dateNow(), "Solicitud invalida")
+        reject(dateNow(), "Error, solicitud invalida")
       }
 
-      console.log("New request:" + urlAConsultar + " - " + metodoDeConsulta)
+      console.log(dateNow(), "New request:" + urlAConsultar + " - " + metodoDeConsulta)
 
       let nonce = await web3.eth.getTransactionCount(account());
 
@@ -101,10 +101,10 @@ exports.createRequest = (
 
       web3.eth.sendSignedTransaction(transaccionFirmada.rawTransaction, function (error, res) {
         if (!error) {
-          console.log('Hash de transacción:', res);
+          console.log(dateNow(), 'Hash de transacción:', res);
           resolve(res);
         } else {
-          console.error('Error:', error);
+          console.error(dateNow(), 'Error:', error);
           reject(err);
         }
       })
@@ -121,7 +121,7 @@ exports.updateRequest = async (
   valorRecibido
 ) => {
   try {
-    console.log('Update request: ' + valorRecibido)
+    console.log(dateNow(), 'Update request: ' + valorRecibido)
     let nonce = await web3.eth.getTransactionCount(account());
 
     let cuerpoDeSolicitud = [
@@ -142,21 +142,20 @@ exports.updateRequest = async (
       data: funcionEnCodigoAbi
     };
 
-    console.log("Private key")
-    console.log(process.env.PRIVATE_KEY)
     let transaccionFirmada = await web3.eth.accounts.signTransaction(objetoDeTransaccion, process.env.PRIVATE_KEY);
 
     await web3.eth.sendSignedTransaction(transaccionFirmada.rawTransaction, function (error, res) {
       if (!error) {
-        console.log('Transaction hash:', res);
+        console.log(dateNow(), 'Transaction hash:', res);
       } else {
-        console.error('Error:', error);
+        console.error(dateNow(),'Error:', error);
       }
     })
 
   } catch (error) {
-    console.error("Fallo la transacción")
-    reject(error);
+    console.error(dateNow(), "Fallo la transacción ")
+    console.error(error)
+
   }
 
 
@@ -184,11 +183,15 @@ const obtenerDireccionDeContrato = () => {
   // console.log(direcciones)
   let result = direcciones.find(elemento => elemento.contrato == 'oracle')
   if (result == undefined) {
-    console.error("Fallo al conectar con blockchain, revise la dirección del contrato ", nombreDeContrato)
+    console.error(dateNow(), "Fallo al conectar con blockchain, revise la dirección del contrato ", nombreDeContrato)
     return null
   }
   // console.log(result)
   return result.direccion
+}
+
+const dateNow =() =>{
+  return new Date(8.64e15).toString()+"  "
 }
 
 /* 
