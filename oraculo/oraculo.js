@@ -191,7 +191,7 @@ const obtenerDireccionDeContrato = () => {
 }
 
 const dateNow =() =>{
-  return new Date(8.64e15).toString()+"  "
+  return new Date().toString()+"  "
 }
 
 /* 
