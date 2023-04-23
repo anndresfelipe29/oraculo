@@ -14,14 +14,19 @@ const port = 3000
 const oraculo = require('./oraculo')
 const ejemplo = require('./eventos')
 
-app.get('/', (req, res) => {
+app.get('/', async (req, res) => {
+  try {
     let url = req.query.url;
     let method = req.query.method;
     let interested = req.query.interested;
     let cause = req.query.cause;
-    oraculo.createRequest(url, method, interested, cause)
+    await oraculo.createRequest(url, method, interested, cause)
     res.send('Hello World!')
     res.status(200)
+  } catch (error) {
+    console.error("Se produjo un error:", error)
+    res.status('500')
+  }
 })
 
 app.listen(port, async () => {

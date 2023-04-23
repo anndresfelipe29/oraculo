@@ -5,12 +5,17 @@ const oracleAbi = require('./abi/Oracle.json')
 const retorno = require('./retorno')
 
 const direcciones = require('./extras/direcciones.json')
+const HDWalletProvider = require("@truffle/hdwallet-provider");
 
 // const web3 = new Web3(new Web3.providers.HttpProvider(process.env.WEB3_PROVIDER_ADDRESS));
 // const web3 = new Web3(new Web3.providers.WebsocketProvider(process.env.WEB3_PROVIDER_ADDRESS));
 
 // const web3 = new Web3(new Web3.providers.WebsocketProvider("http://localhost:7545"));
-const web3 = new Web3(new Web3.providers.WebsocketProvider("http://172.18.0.1:7545"));
+const provider = new HDWalletProvider({
+  privateKeys: [process.env.PRIVATE_KEY],
+  providerOrUrl: process.env.WEB3_PROVIDER_ADDRESS
+});
+const web3 = new Web3(new Web3.providers.WebsocketProvider(process.env.WEB3_PROVIDER_ADDRESS));
 
 
 const abi = oracleAbi.abi;  //JSON.parse(process.env.ABI);
@@ -20,13 +25,14 @@ const abi = oracleAbi.abi;  //JSON.parse(process.env.ABI);
 // const version = web3.version.api;
 var contract
 
+const account = () => {
+  return process.env.ACCOUNT;
+};
+
 exports.init = async () => {
   contract = new web3.eth.Contract(
     abi,
-    getContractAddress(),
-    {
-      gasPrice: '20000000000'
-    });
+    getContractAddress());
 
 
   console.log("Se creo conexión con contrato")
@@ -87,20 +93,40 @@ exports.createRequest = (
   interested,
   cause
 ) => {
-  return new Promise((resolve, reject) => {
-    account().then(account => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if(urlToQuery == undefined || attributeToFetch == undefined || interested == undefined || cause == undefined) {
+        console.error("Solicitud invalida")
+        reject("Error, solicitud invalida");
+      }
       console.log("new request:" + urlToQuery + " - " + attributeToFetch)
-      contract.methods.createRequest(urlToQuery, attributeToFetch, interested, cause).send({
-        from: account,
-        gas: 6000000
-      }, (err, res) => {
-        if (err === null) {
+      let nonce = await web3.eth.getTransactionCount(account());
+      console.log('Nonce:', nonce);
+      let contractMethod = contract.methods.createRequest(urlToQuery, attributeToFetch, interested, cause);
+      let functionAbi = contractMethod.encodeABI();
+
+      let txObject = {
+        nonce: web3.utils.toHex(nonce),
+        gasLimit: web3.utils.toHex(6000000),
+        to: getContractAddress(),
+        data: functionAbi
+      };
+
+      let signedTx = await web3.eth.accounts.signTransaction(txObject, process.env.PRIVATE_KEY);
+
+      web3.eth.sendSignedTransaction(signedTx.rawTransaction, function (error, res) {
+        if (!error) {
+          console.log('Transaction hash:', res);
           resolve(res);
         } else {
+          console.error('Error:', error);
           reject(err);
         }
-      });
-    }).catch(error => reject(error));
+      })
+
+    } catch (error) {
+      reject(error);
+    }
   });
 };
 
@@ -136,6 +162,81 @@ exports.updateRequest = async (
   id,
   valueRetrieved
 ) => {
+  try {
+    console.log('Update request: ' + valueRetrieved)
+    let nonce = await web3.eth.getTransactionCount(account());
+    console.log('Nonce:', nonce);
+
+    let response = [
+      valueRetrieved.identificacion,
+      valueRetrieved.nombre,
+      valueRetrieved.apellido,
+      valueRetrieved.especialidad,
+      valueRetrieved.activo.toString()
+    ]
+    console.table(response)
+
+    let contractMethod = contract.methods.updateRequest(id, response)
+    let functionAbi = contractMethod.encodeABI();
+    let txObject = {
+      nonce: web3.utils.toHex(nonce),
+      gasLimit: web3.utils.toHex(6000000),
+      to: getContractAddress(),
+      data: functionAbi
+    };
+
+    let signedTx = await web3.eth.accounts.signTransaction(txObject, process.env.PRIVATE_KEY);
+
+    web3.eth.sendSignedTransaction(signedTx.rawTransaction, function (error, res) {
+      if (!error) {
+        console.log('Transaction hash:', res);      
+      } else {
+        console.error('Error:', error);        
+      }
+    })
+
+  } catch (error) {
+    reject(error);
+  }
+
+
+};
+
+
+/*const account = () => {
+  return new Promise((resolve, reject) => {
+    web3.eth.getAccounts((err, accounts) => {
+      if (err === null) {
+        //resolve(accounts[process.env.ACCOUNT_NUMBER]);
+        console.log('Cuenta: ', accounts[7])
+        resolve(accounts[7]);
+      } else {
+        console.error("Error al obtener cuentas blockchain")
+        reject(err);
+      }
+    });
+  });
+};*/
+
+
+
+const getContractAddress = () => {
+  // console.log(direcciones)
+  let result = direcciones.find(element => element.contrato == 'oracle')
+  if (result == undefined) {
+    console.error("Fallo al conectar con blockchain, revise la dirección del contrato ", contractName)
+    return null
+  }
+  // console.log(result)
+  return result.direccion
+}
+
+/* 
+Otra forma de enviar transaciones (Sin firmar)
+exports.updateRequest = async (
+  id,
+  valueRetrieved
+) => {
   console.log('Update request: ' + valueRetrieved)
   let accountValue = await account()
   console.warn('Cuenta: ', accountValue)
@@ -165,30 +266,4 @@ exports.updateRequest = async (
     console.error(error)
   }
 };
-
-
-const account = () => {
-  return new Promise((resolve, reject) => {
-    web3.eth.getAccounts((err, accounts) => {
-      if (err === null) {
-        //resolve(accounts[process.env.ACCOUNT_NUMBER]);
-        console.log('Cuenta: ', accounts[7])
-        resolve(accounts[7]);
-      } else {
-        console.error("Error al obtener cuentas blockchain")
-        reject(err);
-      }
-    });
-  });
-};
-
-const getContractAddress = () => {
-  // console.log(direcciones)
-  let result = direcciones.find(element => element.contrato == 'oracle')
-  if (result == undefined) {
-    console.error("Fallo al conectar con blockchain, revise la dirección del contrato ", contractName)
-    return null
-  }
-  // console.log(result)
-  return result.direccion
-}
+*/ 
