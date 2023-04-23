@@ -41,7 +41,7 @@ const newRequest = (contracto) => {
         console.table(respuesta)
 
         if (respuesta != null) {
-          this.updateRequest(evento.returnValues.id, respuesta)
+          await this.updateRequest(evento.returnValues.id, respuesta)
         }
       } catch (error) {
         console.error("Fallo en el sistema: ", error)
