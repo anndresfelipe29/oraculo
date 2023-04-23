@@ -1,0 +1,49 @@
+version: '3.5'
+
+services: 
+
+  sistema-validador-externo:
+    image: node:19-alpine
+    container_name: ${API_NAME_VALIDADOR_EXTERNO}
+    volumes:
+      - ../sistema-validacion-medico:/validador
+    env_file: 
+      -  .env
+    working_dir: /validador
+    ports: 
+      - 3001:3001
+    networks:
+      - backend
+    command: sh -c "
+      ls;
+      npm install;
+      sleep 15s;
+      echo ===========INICIANDO VALIDADOR EXTERNO===========;
+      npm start;"
+
+
+  oraculo:
+    build: 
+      context: .
+      target: base
+    container_name: ${API_NAME_ORACULO}
+    volumes:
+      - ../oraculo:/oraculo
+    env_file: 
+      - .env
+    working_dir: /oraculo
+    ports: 
+      - 3000:3000
+      - 8516:8516
+      - 8515:8545
+    networks:
+      - backend
+    command: sh -c "
+      ls;
+      npm install;
+      sleep 200;
+      echo  ===========INICIANDO ORACULO===========;
+      npm start;"  
+
+
+        

@@ -1,28 +1,22 @@
-require("dotenv").config();
-const { request } = require("express");
-const Web3 = require('web3');
+require("dotenv").config()
+const { request } = require("express")
+const Web3 = require('web3')
 const oracleAbi = require('./abi/Oracle.json')
 const retorno = require('./retorno')
 
 const direcciones = require('./extras/direcciones.json')
-const HDWalletProvider = require("@truffle/hdwallet-provider");
+const HDWalletProvider = require("@truffle/hdwallet-provider")
 
 // const web3 = new Web3(new Web3.providers.HttpProvider(process.env.WEB3_PROVIDER_ADDRESS));
-// const web3 = new Web3(new Web3.providers.WebsocketProvider(process.env.WEB3_PROVIDER_ADDRESS));
-
 // const web3 = new Web3(new Web3.providers.WebsocketProvider("http://localhost:7545"));
 const provider = new HDWalletProvider({
   privateKeys: [process.env.PRIVATE_KEY],
   providerOrUrl: process.env.WEB3_PROVIDER_ADDRESS
 });
-const web3 = new Web3(new Web3.providers.WebsocketProvider(process.env.WEB3_PROVIDER_ADDRESS));
+const web3 = new Web3(new Web3.providers.WebsocketProvider(process.env.WEB3_PROVIDER_ADDRESS))
 
 
 const abi = oracleAbi.abi;  //JSON.parse(process.env.ABI);
-// const address = process.env.CONTRACT_ADDRESS;
-// const address = getContractAddress()
-// "0x718c7e587192465270CB57BC0a7fC7f4dD6374E8"
-// const version = web3.version.api;
 var contract
 
 const account = () => {
@@ -30,13 +24,8 @@ const account = () => {
 };
 
 exports.init = async () => {
-  contract = new web3.eth.Contract(
-    abi,
-    getContractAddress());
-
-
+  contract = new web3.eth.Contract(abi, getContractAddress())
   console.log("Se creo conexión con contrato")
-
   newRequest(contract)
   updatedRequest(contract)
   return contract
@@ -49,12 +38,12 @@ const newRequest = (contract) => {
 
   contract.events.NewRequest(optionsNotification)
     .on('data', async event => {
-      //console.log(event)
       try {
-        console.log('Notificacion new request: ', event.returnValues);
+        console.log('Notificacion new request: ', event.returnValues)
 
-        let response = await retorno.responder(event.returnValues);
+        let response = await retorno.responder(event.returnValues)
         console.table(response)
+
         if (response != null) {
           this.updateRequest(event.returnValues.id, response)
         }
@@ -63,7 +52,7 @@ const newRequest = (contract) => {
       }
     })
     .on('error', err => {
-      console.log("f se rompio changed")
+      console.log("Ocurrio una notificación de error, changed")
       console.log(err)
     })
 
@@ -76,10 +65,7 @@ const updatedRequest = (contract) => {
 
   contract.events.UpdatedRequest(optionsNotification)
     .on('data', event => {
-      //console.log(event)
-      console.log('Notificacion updated request: ', event.returnValues);
-      //retorno.responder(event.returnValues);
-
+      console.log('Notificacion updated request: ', event.returnValues)
     })
     .on('error', err => {
       console.error("f se rompio changed")
@@ -95,13 +81,17 @@ exports.createRequest = (
 ) => {
   return new Promise(async (resolve, reject) => {
     try {
-      if(urlToQuery == undefined || attributeToFetch == undefined || interested == undefined || cause == undefined) {
+
+      if (urlToQuery == undefined || attributeToFetch == undefined || interested == undefined || cause == undefined) {
         console.error("Solicitud invalida")
-        reject("Error, solicitud invalida");
+        reject("Error, solicitud invalida")
       }
-      console.log("new request:" + urlToQuery + " - " + attributeToFetch)
+
+      console.log("New request:" + urlToQuery + " - " + attributeToFetch)
+
       let nonce = await web3.eth.getTransactionCount(account());
       console.log('Nonce:', nonce);
+
       let contractMethod = contract.methods.createRequest(urlToQuery, attributeToFetch, interested, cause);
       let functionAbi = contractMethod.encodeABI();
 
@@ -130,33 +120,6 @@ exports.createRequest = (
   });
 };
 
-
-/*exports.updateRequest = (
-  id,
-  valueRetrieved
-) => {
-  console.log('-----update request: '+ valueRetrieved)
-  return new Promise((resolve, reject) => {
-    account().then(account => {
-      contract.methods.updateRequest(id, valueRetrieved).send({
-        from: account,
-        gas: 6000000
-      }, (err, res) => {
-        if (err === null) {
-          console.log('responde')
-          console.log(res)
-          resolve(res);
-        } else {
-          console.log('error')
-          reject(err);
-        }
-      });
-    }).catch(error => {
-      console.log('error');
-      reject(error)
-    })
-  });
-};*/
 
 exports.updateRequest = async (
   id,
@@ -189,9 +152,9 @@ exports.updateRequest = async (
 
     web3.eth.sendSignedTransaction(signedTx.rawTransaction, function (error, res) {
       if (!error) {
-        console.log('Transaction hash:', res);      
+        console.log('Transaction hash:', res);
       } else {
-        console.error('Error:', error);        
+        console.error('Error:', error);
       }
     })
 
