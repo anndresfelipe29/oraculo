@@ -128,7 +128,6 @@ exports.updateRequest = async (
   try {
     console.log('Update request: ' + valueRetrieved)
     let nonce = await web3.eth.getTransactionCount(account());
-    console.log('Nonce:', nonce);
 
     let response = [
       valueRetrieved.identificacion,
