@@ -1,4 +1,5 @@
 const request = require('request');
+const utils = require('./utils')
 
 exports.llamarApi = async (url, metodoDeConsulta) => {
   return new Promise((resolve, reject) => {
@@ -13,16 +14,16 @@ exports.llamarApi = async (url, metodoDeConsulta) => {
               if(respuesta.statusCode == 200) {
                 resolve(respuesta.body)
               }
-              console.log(respuesta.body)
+              console.log(utils.dateNow(), respuesta.body)
               reject("Invalid status");
               //console.log(body)
             } else {
-              console.log(error);
+              console.log(utils.dateNow(), error);
               reject(error);
             }
         })
     } catch (error) {
-      console.error(dateNow(), "Fallo en la petición:", error )
+      console.error(utils.dateNow(), "Fallo en la petición:", error )
       reject(error)
     }
 

@@ -3,6 +3,7 @@ const { request } = require("express")
 const Web3 = require('web3')
 const oracleAbi = require('./abi/Oracle.json')
 const retorno = require('./retorno')
+const utils = require('./utils')
 
 const direcciones = require('./extras/direcciones.json')
 
@@ -21,7 +22,7 @@ const account = () => {
 
 exports.init = async () => {
   contracto = new web3.eth.Contract(abi, obtenerDireccionDeContrato())
-  console.log(dateNow(), "Se creo conexión con contrato")
+  console.log(utils.dateNow(), "Se creo conexión con contrato")
   newRequest(contracto)
   updatedRequest(contracto)
   return contracto
@@ -35,7 +36,7 @@ const newRequest = (contracto) => {
   contracto.events.NewRequest(opcionesDeNotificacion)
     .on('data', async evento => {
       try {
-        console.log(dateNow(), 'Notificacion new request: ', evento.returnValues)
+        console.log(utils.dateNow(), 'Notificacion new request: ', evento.returnValues)
 
         let respuesta = await retorno.responder(evento.returnValues)
         console.table(respuesta)
@@ -44,12 +45,12 @@ const newRequest = (contracto) => {
           await this.updateRequest(evento.returnValues.id, respuesta)
         }
       } catch (error) {
-        console.error(dateNow(),"Fallo en el sistema: ", error)
+        console.error(utils.dateNow(),"Fallo en el sistema: ", error)
       }
     })
     .on('error', error => {
-      console.log(dateNow(), "Ocurrio una notificación de error, changed")
-      console.log(dateNow(), error)
+      console.log(utils.dateNow(), "Ocurrio una notificación de error, changed")
+      console.log(utils.dateNow(), error)
     })
 
 };
@@ -61,11 +62,11 @@ const updatedRequest = (contracto) => {
 
   contracto.events.UpdatedRequest(opcionesDeNotificacion)
     .on('data', evento => {
-      console.log(dateNow(), 'Notificación updated request: ', evento.returnValues)
+      console.log(utils.dateNow(), 'Notificación updated request: ', evento.returnValues)
     })
     .on('error', error => {
-      console.error(dateNow(), "Ocurrio una notificación de error, changed")
-      console.error(dateNow(), error)
+      console.error(utils.dateNow(), "Ocurrio una notificación de error, changed")
+      console.error(utils.dateNow(), error)
     })
 };
 
@@ -79,11 +80,11 @@ exports.createRequest = (
     try {
 
       if (urlAConsultar == undefined || metodoDeConsulta == undefined || interesado == undefined || causa == undefined) {
-        console.error(dateNow(), "Solicitud invalida")
-        reject(dateNow(), "Error, solicitud invalida")
+        console.error(utils.dateNow(), "Solicitud invalida")
+        reject(utils.dateNow(), "Error, solicitud invalida")
       }
 
-      console.log(dateNow(), "New request:" + urlAConsultar + " - " + metodoDeConsulta)
+      console.log(utils.dateNow(), "New request:" + urlAConsultar + " - " + metodoDeConsulta)
 
       let nonce = await web3.eth.getTransactionCount(account());
 
@@ -101,10 +102,10 @@ exports.createRequest = (
 
       web3.eth.sendSignedTransaction(transaccionFirmada.rawTransaction, function (error, res) {
         if (!error) {
-          console.log(dateNow(), 'Hash de transacción:', res);
+          console.log(utils.dateNow(), 'Hash de transacción:', res);
           resolve(res);
         } else {
-          console.error(dateNow(), 'Error:', error);
+          console.error(utils.dateNow(), 'Error:', error);
           reject(err);
         }
       })
@@ -121,7 +122,7 @@ exports.updateRequest = async (
   valorRecibido
 ) => {
   try {
-    console.log(dateNow(), 'Update request: ' + valorRecibido)
+    console.log(utils.dateNow(), 'Update request: ' + valorRecibido)
     let nonce = await web3.eth.getTransactionCount(account());
 
     let cuerpoDeSolicitud = [
@@ -146,14 +147,14 @@ exports.updateRequest = async (
 
     await web3.eth.sendSignedTransaction(transaccionFirmada.rawTransaction, function (error, res) {
       if (!error) {
-        console.log(dateNow(), 'Transaction hash:', res);
+        console.log(utils.dateNow(), 'Transaction hash:', res);
       } else {
-        console.error(dateNow(),'Error:', error);
+        console.error(utils.dateNow(),'Error:', error);
       }
     })
 
   } catch (error) {
-    console.error(dateNow(), "Fallo la transacción ")
+    console.error(utils.dateNow(), "Fallo la transacción ")
     console.error(error)
 
   }
@@ -183,16 +184,13 @@ const obtenerDireccionDeContrato = () => {
   // console.log(direcciones)
   let result = direcciones.find(elemento => elemento.contrato == 'oracle')
   if (result == undefined) {
-    console.error(dateNow(), "Fallo al conectar con blockchain, revise la dirección del contrato ", nombreDeContrato)
+    console.error(utils.dateNow(), "Fallo al conectar con blockchain, revise la dirección del contrato ", nombreDeContrato)
     return null
   }
   // console.log(result)
   return result.direccion
 }
 
-const dateNow =() =>{
-  return new Date().toString()+"  "
-}
 
 /* 
 Otra forma de enviar transaciones (Sin firmar)
