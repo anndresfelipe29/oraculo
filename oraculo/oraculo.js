@@ -142,9 +142,11 @@ exports.updateRequest = async (
       data: funcionEnCodigoAbi
     };
 
+    console.log("Private key")
+    console.log(process.env.PRIVATE_KEY)
     let transaccionFirmada = await web3.eth.accounts.signTransaction(objetoDeTransaccion, process.env.PRIVATE_KEY);
 
-    web3.eth.sendSignedTransaction(transaccionFirmada.rawTransaction, function (error, res) {
+    await web3.eth.sendSignedTransaction(transaccionFirmada.rawTransaction, function (error, res) {
       if (!error) {
         console.log('Transaction hash:', res);
       } else {
@@ -153,6 +155,7 @@ exports.updateRequest = async (
     })
 
   } catch (error) {
+    console.error("Fallo la transacción")
     reject(error);
   }
 
