@@ -25,7 +25,7 @@ app.get('/', async (req, res) => {
     res.send('Hello World!')
     
   } catch (error) {
-    console.error("Se produjo un error:", error)
+    console.error(dateNow(), "Se produjo un error:", error)
     res.status(500).send({error: "Petición invalida"})
   }
 })

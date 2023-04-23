@@ -22,7 +22,7 @@ exports.llamarApi = async (url, metodoDeConsulta) => {
             }
         })
     } catch (error) {
-      console.error("se murio:", error )
+      console.error(dateNow(), "Fallo en la petición:", error )
       reject(error)
     }
 
