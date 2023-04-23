@@ -1,32 +1,29 @@
 const request = require('request');
 
-exports.callApi = async (url, methodRequest) => {
+exports.llamarApi = async (url, metodoDeConsulta) => {
   return new Promise((resolve, reject) => {
-    let requestOptions = {
+    let opcionesDePeticion = {
       uri: url,
-      method: methodRequest,
-      //uri: 'http://localhost:3001/validar-usuario?identificacion=1004',
-      /*qs: {
-        identificacion: '1001',          
-      }*/
+      method: metodoDeConsulta
     }
     try {
-      request(requestOptions, (err, response, body) => {
-          if (err === null) {
-              console.log(response.statusCode)
-              if(response.statusCode == 200) {
-                resolve(response.body)
+      request(opcionesDePeticion, (error, respuesta, body) => {
+          if (error === null) {
+              console.log(respuesta.statusCode)
+              if(respuesta.statusCode == 200) {
+                resolve(respuesta.body)
               }
-              console.log(response.body)
+              console.log(respuesta.body)
               reject("Invalid status");
               //console.log(body)
             } else {
-              console.log(err);
-              reject(err);
+              console.log(error);
+              reject(error);
             }
         })
     } catch (error) {
       console.error("se murio:", error )
+      reject(error)
     }
 
     })

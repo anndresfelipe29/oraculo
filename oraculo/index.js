@@ -21,11 +21,12 @@ app.get('/', async (req, res) => {
     let interested = req.query.interested;
     let cause = req.query.cause;
     await oraculo.createRequest(url, method, interested, cause)
-    res.send('Hello World!')
     res.status(200)
+    res.send('Hello World!')
+    
   } catch (error) {
     console.error("Se produjo un error:", error)
-    res.status('500')
+    res.status(500).send({error: "Petición invalida"})
   }
 })
 

@@ -5,108 +5,103 @@ const oracleAbi = require('./abi/Oracle.json')
 const retorno = require('./retorno')
 
 const direcciones = require('./extras/direcciones.json')
-const HDWalletProvider = require("@truffle/hdwallet-provider")
 
 // const web3 = new Web3(new Web3.providers.HttpProvider(process.env.WEB3_PROVIDER_ADDRESS));
 // const web3 = new Web3(new Web3.providers.WebsocketProvider("http://localhost:7545"));
-const provider = new HDWalletProvider({
-  privateKeys: [process.env.PRIVATE_KEY],
-  providerOrUrl: process.env.WEB3_PROVIDER_ADDRESS
-});
+
 const web3 = new Web3(new Web3.providers.WebsocketProvider(process.env.WEB3_PROVIDER_ADDRESS))
 
 
 const abi = oracleAbi.abi;  //JSON.parse(process.env.ABI);
-var contract
+var contracto
 
 const account = () => {
   return process.env.ACCOUNT;
 };
 
 exports.init = async () => {
-  contract = new web3.eth.Contract(abi, getContractAddress())
+  contracto = new web3.eth.Contract(abi, obtenerDireccionDeContrato())
   console.log("Se creo conexión con contrato")
-  newRequest(contract)
-  updatedRequest(contract)
-  return contract
+  newRequest(contracto)
+  updatedRequest(contracto)
+  return contracto
 }
 
-const newRequest = (contract) => {
-  let optionsNotification = {
+const newRequest = (contracto) => {
+  let opcionesDeNotificacion = {
     fromBlock: 'latest'
   };
 
-  contract.events.NewRequest(optionsNotification)
-    .on('data', async event => {
+  contracto.events.NewRequest(opcionesDeNotificacion)
+    .on('data', async evento => {
       try {
-        console.log('Notificacion new request: ', event.returnValues)
+        console.log('Notificacion new request: ', evento.returnValues)
 
-        let response = await retorno.responder(event.returnValues)
-        console.table(response)
+        let respuesta = await retorno.responder(evento.returnValues)
+        console.table(respuesta)
 
-        if (response != null) {
-          this.updateRequest(event.returnValues.id, response)
+        if (respuesta != null) {
+          this.updateRequest(evento.returnValues.id, respuesta)
         }
       } catch (error) {
         console.error("Fallo en el sistema: ", error)
       }
     })
-    .on('error', err => {
+    .on('error', error => {
       console.log("Ocurrio una notificación de error, changed")
-      console.log(err)
+      console.log(error)
     })
 
 };
 
-const updatedRequest = (contract) => {
-  let optionsNotification = {
+const updatedRequest = (contracto) => {
+  let opcionesDeNotificacion = {
     fromBlock: 'latest'
   };
 
-  contract.events.UpdatedRequest(optionsNotification)
-    .on('data', event => {
-      console.log('Notificacion updated request: ', event.returnValues)
+  contracto.events.UpdatedRequest(opcionesDeNotificacion)
+    .on('data', evento => {
+      console.log('Notificación updated request: ', evento.returnValues)
     })
-    .on('error', err => {
-      console.error("f se rompio changed")
-      console.error(err)
+    .on('error', error => {
+      console.error("Ocurrio una notificación de error, changed")
+      console.error(error)
     })
 };
 
 exports.createRequest = (
-  urlToQuery,
-  attributeToFetch,
-  interested,
-  cause
+  urlAConsultar,
+  metodoDeConsulta,
+  interesado,
+  causa
 ) => {
   return new Promise(async (resolve, reject) => {
     try {
 
-      if (urlToQuery == undefined || attributeToFetch == undefined || interested == undefined || cause == undefined) {
+      if (urlAConsultar == undefined || metodoDeConsulta == undefined || interesado == undefined || causa == undefined) {
         console.error("Solicitud invalida")
         reject("Error, solicitud invalida")
       }
 
-      console.log("New request:" + urlToQuery + " - " + attributeToFetch)
+      console.log("New request:" + urlAConsultar + " - " + metodoDeConsulta)
 
       let nonce = await web3.eth.getTransactionCount(account());
-      console.log('Nonce:', nonce);
 
-      let contractMethod = contract.methods.createRequest(urlToQuery, attributeToFetch, interested, cause);
-      let functionAbi = contractMethod.encodeABI();
+      let metodoDelContrato = contracto.methods.createRequest(urlAConsultar, metodoDeConsulta, interesado, causa);
+      let funcionEnCodigoAbi = metodoDelContrato.encodeABI();
 
-      let txObject = {
+      let objetoDeTransaccion = {
         nonce: web3.utils.toHex(nonce),
         gasLimit: web3.utils.toHex(6000000),
-        to: getContractAddress(),
-        data: functionAbi
+        to: obtenerDireccionDeContrato(),
+        data: funcionEnCodigoAbi
       };
 
-      let signedTx = await web3.eth.accounts.signTransaction(txObject, process.env.PRIVATE_KEY);
+      let transaccionFirmada = await web3.eth.accounts.signTransaction(objetoDeTransaccion, process.env.PRIVATE_KEY);
 
-      web3.eth.sendSignedTransaction(signedTx.rawTransaction, function (error, res) {
+      web3.eth.sendSignedTransaction(transaccionFirmada.rawTransaction, function (error, res) {
         if (!error) {
-          console.log('Transaction hash:', res);
+          console.log('Hash de transacción:', res);
           resolve(res);
         } else {
           console.error('Error:', error);
@@ -123,33 +118,33 @@ exports.createRequest = (
 
 exports.updateRequest = async (
   id,
-  valueRetrieved
+  valorRecibido
 ) => {
   try {
-    console.log('Update request: ' + valueRetrieved)
+    console.log('Update request: ' + valorRecibido)
     let nonce = await web3.eth.getTransactionCount(account());
 
-    let response = [
-      valueRetrieved.identificacion,
-      valueRetrieved.nombre,
-      valueRetrieved.apellido,
-      valueRetrieved.especialidad,
-      valueRetrieved.activo.toString()
+    let cuerpoDeSolicitud = [
+      valorRecibido.identificacion,
+      valorRecibido.nombre,
+      valorRecibido.apellido,
+      valorRecibido.especialidad,
+      valorRecibido.activo.toString()
     ]
-    console.table(response)
+    console.table(cuerpoDeSolicitud)
 
-    let contractMethod = contract.methods.updateRequest(id, response)
-    let functionAbi = contractMethod.encodeABI();
-    let txObject = {
+    let metodoDelContrato = contracto.methods.updateRequest(id, cuerpoDeSolicitud)
+    let funcionEnCodigoAbi = metodoDelContrato.encodeABI();
+    let objetoDeTransaccion = {
       nonce: web3.utils.toHex(nonce),
       gasLimit: web3.utils.toHex(6000000),
-      to: getContractAddress(),
-      data: functionAbi
+      to: obtenerDireccionDeContrato(),
+      data: funcionEnCodigoAbi
     };
 
-    let signedTx = await web3.eth.accounts.signTransaction(txObject, process.env.PRIVATE_KEY);
+    let transaccionFirmada = await web3.eth.accounts.signTransaction(objetoDeTransaccion, process.env.PRIVATE_KEY);
 
-    web3.eth.sendSignedTransaction(signedTx.rawTransaction, function (error, res) {
+    web3.eth.sendSignedTransaction(transaccionFirmada.rawTransaction, function (error, res) {
       if (!error) {
         console.log('Transaction hash:', res);
       } else {
@@ -182,11 +177,11 @@ exports.updateRequest = async (
 
 
 
-const getContractAddress = () => {
+const obtenerDireccionDeContrato = () => {
   // console.log(direcciones)
-  let result = direcciones.find(element => element.contrato == 'oracle')
+  let result = direcciones.find(elemento => elemento.contrato == 'oracle')
   if (result == undefined) {
-    console.error("Fallo al conectar con blockchain, revise la dirección del contrato ", contractName)
+    console.error("Fallo al conectar con blockchain, revise la dirección del contrato ", nombreDeContrato)
     return null
   }
   // console.log(result)
