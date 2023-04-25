@@ -16,7 +16,7 @@ const web3 = new Web3(new Web3.providers.WebsocketProvider(process.env.WEB3_PROV
 const abi = oracleAbi.abi;  //JSON.parse(process.env.ABI);
 var contracto
 
-const account = () => {
+const consultarCuenta = () => {
   return process.env.ACCOUNT;
 };
 
@@ -86,7 +86,7 @@ exports.createRequest = (
 
       console.log(utils.dateNow(), "New request:" + urlAConsultar + " - " + metodoDeConsulta)
 
-      let nonce = await web3.eth.getTransactionCount(account());
+      let nonce = await web3.eth.getTransactionCount(consultarCuenta());
 
       let metodoDelContrato = contracto.methods.createRequest(urlAConsultar, metodoDeConsulta, interesado, causa);
       let funcionEnCodigoAbi = metodoDelContrato.encodeABI();
@@ -123,7 +123,8 @@ exports.updateRequest = async (
 ) => {
   try {
     console.log(utils.dateNow(), 'Update request: ' + valorRecibido)
-    let nonce = await web3.eth.getTransactionCount(account());
+    let cuenta = consultarCuenta()
+    let nonce = await web3.eth.getTransactionCount(cuenta);
 
     let cuerpoDeSolicitud = [
       valorRecibido.identificacion,

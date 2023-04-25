@@ -4,6 +4,7 @@ const express = require('express')
 const bodyParser = require('body-parser');
 const url = require('url');
 const querystring = require('querystring');
+const utils = require('./utils')
 
 const app = express()
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -25,7 +26,7 @@ app.get('/', async (req, res) => {
     res.send('Hello World!')
     
   } catch (error) {
-    console.error(dateNow(), "Se produjo un error:", error)
+    console.error(utils.dateNow(), "Se produjo un error:", error)
     res.status(500).send({error: "Petición invalida"})
   }
 })
