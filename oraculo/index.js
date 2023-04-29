@@ -4,6 +4,7 @@ const express = require('express')
 const bodyParser = require('body-parser');
 const url = require('url');
 const querystring = require('querystring');
+const utils = require('./utils')
 
 const app = express()
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -21,11 +22,12 @@ app.get('/', async (req, res) => {
     let interested = req.query.interested;
     let cause = req.query.cause;
     await oraculo.createRequest(url, method, interested, cause)
-    res.send('Hello World!')
     res.status(200)
+    res.send('Hello World!')
+    
   } catch (error) {
-    console.error("Se produjo un error:", error)
-    res.status('500')
+    console.error(utils.dateNow(), "Se produjo un error:", error)
+    res.status(500).send({error: "Petición invalida"})
   }
 })
 
@@ -35,7 +37,6 @@ app.listen(port, async () => {
   x = oraculo.init()
   //ejemplo.ejemplo()
 })
-
 
 
 /*var http = require('http');
@@ -55,4 +56,5 @@ server.listen(3000, function () {
 
 console.log("sigue")
 */
+
 
