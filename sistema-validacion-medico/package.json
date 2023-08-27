@@ -4,13 +4,14 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon app.js",
+    "start": "nodemon --ignore '*.json' app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Andres Felipe Gomez Salinas",
   "license": "MIT",
   "dependencies": {
     "express": "^4.18.2",
+    "joi": "^17.10.0",
     "nodemon": "^2.0.20"
   }
 }
