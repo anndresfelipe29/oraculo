@@ -95,20 +95,4 @@ app.post('/crear-usuario', (req, res) => {
 app.listen(port, async () => {
   console.log(`Example app listening on port ${port}`)
   //usuarios.cargarUsuarios()
-  try {
-    usuarios.cargarUsuariosDeArchivo("usuarios.json")
-
-    usuarios.actualizacion({
-      identificacion: "1007",
-      nombre: "Pipe",
-      apellido: "Gómez",
-      especialidad: "Gastroenterologo",
-      activo: true
-  }, "usuarios.json")
-
-  } catch (error) {
-    console.log(error)
-  }
-  
-
 })
