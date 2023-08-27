@@ -1,0 +1,51 @@
+{
+  "1000": {
+    "identificacion": "1000",
+    "nombre": "Pipe",
+    "apellido": "Gómez",
+    "especialidad": "Gastroenterologo",
+    "activo": true
+  },
+  "1001": {
+    "identificacion": "1001",
+    "nombre": "Pipe",
+    "apellido": "Gómez",
+    "especialidad": "Gastroenterologo",
+    "activo": true
+  },
+  "1002": {
+    "identificacion": "1002",
+    "nombre": "Pipe",
+    "apellido": "Gómez",
+    "especialidad": "Gastroenterologo",
+    "activo": true
+  },
+  "1003": {
+    "identificacion": "1003",
+    "nombre": "Pipe",
+    "apellido": "Gómez",
+    "especialidad": "Gastroenterologo",
+    "activo": true
+  },
+  "1004": {
+    "identificacion": "1004",
+    "nombre": "Pipe",
+    "apellido": "Gómez",
+    "especialidad": "Gastroenterologo",
+    "activo": true
+  },
+  "1005": {
+    "identificacion": "1005",
+    "nombre": "Pipe",
+    "apellido": "Gómez",
+    "especialidad": "Gastroenterologo",
+    "activo": true
+  },
+  "1007": {
+    "identificacion": "1007",
+    "nombre": "Pipe",
+    "apellido": "Gómez",
+    "especialidad": "Gastroenterologo",
+    "activo": true
+  }
+}

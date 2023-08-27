@@ -1,11 +1,11 @@
 class Medico {
-    identificacion
-    nombre
-    apellido
-    especialidad
-    activo
+    constructor(identificacion, nombre, apellido, especialidad, activo) {
+      this.identificacion = identificacion;
+      this.nombre = nombre;
+      this.apellido = apellido;
+      this.especialidad = especialidad;
+      this.activo = activo;
+    }
+  }
 
-    constructor() {}
-     
-
-}
+  module.exports = Medico;
